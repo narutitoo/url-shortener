@@ -1,14 +1,46 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>URL Shortener Microservice</title>
-  </head>
-  <body>
-    <h1>URL Shortener</h1>
-    <form action="/api/shorturl" method="POST">
-      <label for="url">Enter a URL to shorten:</label><br>
-      <input type="text" id="url" name="url" placeholder="https://example.com" required>
-      <button type="submit">Shorten</button>
-    </form>
-  </body>
+<head>
+  <title>URL Shortener Microservice</title>
+</head>
+<body>
+  <h1>URL Shortener Microservice</h1>
+  <form id="url-form">
+    <label for="url">Enter a URL to shorten:</label><br>
+    <input type="text" id="url" name="url" placeholder="https://example.com" required>
+    <button type="submit">Shorten</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('url-form');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = form.url.value;
+
+      try {
+        const res = await fetch('/api/shorturl', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          resultDiv.textContent = 'Error: ' + data.error;
+        } else {
+          resultDiv.innerHTML = `
+            Original URL: <a href="${data.original_url}" target="_blank">${data.original_url}</a><br>
+            Short URL: <a href="/api/shorturl/${data.short_url}" target="_blank">${window.location.origin}/api/shorturl/${data.short_url}</a>
+          `;
+        }
+      } catch {
+        resultDiv.textContent = 'Error al procesar la solicitud.';
+      }
+    });
+  </script>
+</body>
 </html>
